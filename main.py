@@ -2,9 +2,10 @@
 from datetime import datetime
 import utils
 
+# 93 mins for 200k approx
 if __name__ == '__main__':
     UNT_dataset_filename = "UNT_dataset/HurricaneHarvey_ids.txt"
-    UNT_tweets_ids = utils.txt_to_list(filename = UNT_dataset_filename)[200000:400000]
+    UNT_tweets_ids = utils.txt_to_list(filename = UNT_dataset_filename)[200000:400100]
     utils.build_tweets_csv(tweets_ids = UNT_tweets_ids, csv_filename = "UNT_dataset_200k_400k.csv")
 
     Kaggle_dataset_filename = "Kaggle_dataset/TS_Harvey_Tweets.csv"
