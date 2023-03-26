@@ -3,16 +3,17 @@ from datetime import datetime
 
 from pandas import DataFrame
 from snscrape.modules.twitter import Tweet
-from snscrape.modules.twitter import TwitterTweetScraperMode
-from snscrape.modules.twitter import _TwitterAPIScraper
-from snscrape.modules.twitter import _TwitterAPIType
 import pandas as pd
 import json
 import multiprocessing as mp
+from snscrape.modules.twitter import TwitterTweetScraper
+
 
 def txt_to_list(filename: str):
     with open(filename) as file:
-        lines = list(set([line.rstrip() for line in file]))
+        lines = list(set([int(line.rstrip()) for line in file]))
+        lines.sort()
+        lines = [str(line) for line in lines]
     return lines
 
 
@@ -126,13 +127,11 @@ def get_tweets_ids_from_crisismmd_dataset(
 ):
     CrisisMMD_dataset_ids = []
 
-    "Sun Sep 03 17:37:13 +0000 2017"
     with open(CrisisMMD_datset_filename, 'r') as f:
         for line in f:
             try:
                 tweet = json.loads(line)
                 date = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-
                 if start_date and end_date:
                     if start_date <= date <= end_date:
                         CrisisMMD_dataset_ids.append(tweet['id_str'])
