@@ -4,14 +4,14 @@ import utils
 
 # 93 mins for 200k approx
 if __name__ == '__main__':
-    """UNT_dataset_filename = "UNT_dataset/HurricaneHarvey_ids.txt"
+    UNT_dataset_filename = "UNT_dataset/HurricaneHarvey_ids.txt"
     UNT_tweets_ids = utils.txt_to_list(filename = UNT_dataset_filename)
     UNT_tweets_ids = UNT_tweets_ids[:UNT_tweets_ids.index("903700320081113088")]
 
     print(f"Number of UNT dataset tweets: {len(UNT_tweets_ids)}")
     print("UNT dataset building...")
     utils.build_tweets_csv(tweets_ids = UNT_tweets_ids, csv_filename = "UNT_dataset_200k_400k.csv")
-    print("UNT dataset building completed")"""
+    print("UNT dataset building completed")
 
     Kaggle_dataset_filename = "Kaggle_dataset/TS_Harvey_Tweets.csv"
     start_date = datetime.strptime('2017-08-10', '%Y-%m-%d')

@@ -58,3 +58,8 @@ def save_checkpoint(state,
 def get_loaded_json_file(path):
     with open(path, "r") as fp:
         return json.load(fp)
+
+def save_json_file(elem, path):
+    with open(path, "w") as fp:
+        json.dump(elem, fp)
+

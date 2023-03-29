@@ -73,20 +73,20 @@ def get_split_dictionary(data):
         for key, value in data["places"].items():
             splits.append({
                 "incidents": {},
-                "places": {key: value}
+                "places":    {key: value}
             })
     elif len(data["places"]) == 0:
         for key, value in data["incidents"].items():
             splits.append({
                 "incidents": {key: value},
-                "places": {}
+                "places":    {}
             })
     else:
         for d, dv in data["incidents"].items():
             for p, pv in data["places"].items():
                 splits.append({
                     "incidents": {d: dv},
-                    "places": {p: pv}
+                    "places":    {p: pv}
                 })
     return splits
 
@@ -112,11 +112,11 @@ class IncidentDataset(Dataset):
             incidents_images,
             place_to_index_mapping,
             incident_to_index_mapping,
-            transform=None,
-            use_all=False,
-            pos_only=False,
-            using_softmax=False,
-            use_multi_label=True):
+            transform = None,
+            use_all = False,
+            pos_only = False,
+            using_softmax = False,
+            use_multi_label = True):
 
         self.images_path = images_path
         self.use_all = use_all
@@ -135,21 +135,21 @@ class IncidentDataset(Dataset):
             else:
                 splits = [copy.deepcopy(original_data)]
             for data in splits:
-                
+
                 if not use_multi_label:
                     assert len(data["incidents"]) <= 1 and len(data["places"]) <= 1
 
                 if using_softmax:
                     # the +1 to len accounts for "no place" and "no incident"
                     place_vector, place_weight_vector = get_vectors(
-                        data["places"], place_to_index_mapping, len(place_to_index_mapping) + 1)
+                            data["places"], place_to_index_mapping, len(place_to_index_mapping) + 1)
                     incident_vector, incident_weight_vector = get_vectors(
-                        data["incidents"], incident_to_index_mapping, len(incident_to_index_mapping) + 1)
+                            data["incidents"], incident_to_index_mapping, len(incident_to_index_mapping) + 1)
                 else:
                     place_vector, place_weight_vector = get_vectors(
-                        data["places"], place_to_index_mapping, len(place_to_index_mapping))
+                            data["places"], place_to_index_mapping, len(place_to_index_mapping))
                     incident_vector, incident_weight_vector = get_vectors(
-                        data["incidents"], incident_to_index_mapping, len(incident_to_index_mapping))
+                            data["incidents"], incident_to_index_mapping, len(incident_to_index_mapping))
 
                 # TODO: need to add "no incident" to some...
                 # TODO: somehow fix this hack
@@ -157,11 +157,11 @@ class IncidentDataset(Dataset):
                 if len(data["incidents"]) == 0 and using_softmax == True:
                     incident_vector[-1] = 1  # "no incident" is +1
                     incident_weight_vector = np.ones(
-                        len(incident_weight_vector))
+                            len(incident_weight_vector))
                 elif len(data["incidents"]) == 0:
                     incident_vector = np.zeros(len(incident_weight_vector))
                     incident_weight_vector = np.ones(
-                        len(incident_weight_vector))
+                            len(incident_weight_vector))
 
                 # choose which set to put them into
                 has_incident = False
@@ -205,27 +205,9 @@ class IncidentDataset(Dataset):
         return my_item
 
 
-# TODO: change to dataloader, not dataset
-def get_dataset(args,
-                is_train=True,
-                is_test=False):
-    """
-
-    :param args:
-    :param is_train:
-    :param is_test:
-    :return:
-    """
-    # """Returns the dataset for training or testing.
-    #
-    # Args:
-    #     args:
-    #
-    # Returns:
-    #     DataLoader:
-    # """
-
-    # main dataset (incidents images)
+def get_dataloader(args,
+                   is_train = True,
+                   is_test = False):
     if is_train:
         incidents_images = get_loaded_json_file(args.dataset_train)
         idx = int(len(incidents_images) * args.percent_of_training_set / 100.0)
@@ -236,7 +218,7 @@ def get_dataset(args,
             incidents_images_temp[key] = incidents_images[key]
         incidents_images = incidents_images_temp
     else:
-        if is_test == False:  # validation images
+        if not is_test:  # validation images
             incidents_images = get_loaded_json_file(args.dataset_val)
         else:  # test images
             incidents_images = get_loaded_json_file(args.dataset_test)
@@ -244,8 +226,8 @@ def get_dataset(args,
     place_to_index_mapping = get_place_to_index_mapping()
     incident_to_index_mapping = get_incident_to_index_mapping()
 
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
+    normalize = transforms.Normalize(mean = [0.485, 0.456, 0.406],
+                                     std = [0.229, 0.224, 0.225])
     if is_train:
         pos_only = args.dataset == "pos_only"
         shuffle = True
@@ -270,23 +252,23 @@ def get_dataset(args,
     using_softmax = args.activation == "softmax"
 
     dataset = IncidentDataset(
-        args.images_path,
-        incidents_images,
-        place_to_index_mapping,
-        incident_to_index_mapping,
-        transform=transform,
-        use_all=use_all,
-        pos_only=pos_only,
-        using_softmax=using_softmax
+            args.images_path,
+            incidents_images,
+            place_to_index_mapping,
+            incident_to_index_mapping,
+            transform = transform,
+            use_all = use_all,
+            pos_only = pos_only,
+            using_softmax = using_softmax
     )
 
     # TODO: avoid the double shuffling affect that currently exists
     loader = torch.utils.data.DataLoader(
-        dataset,
-        batch_size=args.batch_size,
-        shuffle=shuffle,
-        num_workers=args.workers,
-        pin_memory=True
+            dataset,
+            batch_size = args.batch_size,
+            shuffle = shuffle,
+            num_workers = args.workers,
+            pin_memory = True
     )
 
     return loader

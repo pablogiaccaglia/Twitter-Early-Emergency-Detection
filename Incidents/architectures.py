@@ -15,7 +15,7 @@ inference_loader = transforms.Compose([
     transforms.Resize((256, 256)),
     transforms.CenterCrop(224),
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    transforms.Normalize(mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225])
 ])
 
 
@@ -64,12 +64,12 @@ class FilenameDataset(data.Dataset):
 def get_trunk_model(args):
     if args.pretrained_with_places:
         print("loading places weights for pretraining")
-        model = models.__dict__[args.arch](num_classes=365)
+        model = models.__dict__[args.arch](num_classes = 365)
         dir_path = os.path.dirname(os.path.realpath(__file__))
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         if args.arch == "resnet18":
             model_file = os.path.join(dir_path, "pretrained_weights/resnet18_places365.pth.tar")
-            checkpoint = torch.load(model_file, map_location=device)
+            checkpoint = torch.load(model_file, map_location = device)
             state_dict = {str.replace(k, 'module.', ''): v for k,
                                                                v in checkpoint['state_dict'].items()}
             model.load_state_dict(state_dict)
@@ -77,7 +77,7 @@ def get_trunk_model(args):
             model = nn.Sequential(model, nn.ReLU())
         elif args.arch == "resnet50":
             model_file = os.path.join(dir_path, "pretrained_weights/resnet50_places365.pth.tar")
-            checkpoint = torch.load(model_file, map_location=device)
+            checkpoint = torch.load(model_file, map_location = device)
             state_dict = {str.replace(k, 'module.', ''): v for k,
                                                                v in checkpoint['state_dict'].items()}
             model.load_state_dict(state_dict)
@@ -88,11 +88,11 @@ def get_trunk_model(args):
         print("loading imagenet weights for pretraining")
         # otherwise load with imagenet weights
         if args.arch == "resnet18":
-            model = models.resnet18(pretrained=True)
+            model = models.resnet18(pretrained = True)
             model.fc = nn.Linear(512, 1024)
             model = nn.Sequential(model, nn.ReLU())
         elif args.arch == "resnet50":
-            model = models.resnet50(pretrained=True)
+            model = models.resnet50(pretrained = True)
             model.fc = nn.Linear(2048, 1024)
             model = nn.Sequential(model, nn.ReLU())
         return model
@@ -124,9 +124,9 @@ def get_incidents_model(args):
     place_layer = get_place_layer(args)
 
     print("Let's use", args.num_gpus, "GPUs!")
-    trunk_model = torch.nn.DataParallel(trunk_model, device_ids=range(args.num_gpus))
-    incident_layer = torch.nn.DataParallel(incident_layer, device_ids=range(args.num_gpus))
-    place_layer = torch.nn.DataParallel(place_layer, device_ids=range(args.num_gpus))
+    trunk_model = torch.nn.DataParallel(trunk_model, device_ids = range(args.num_gpus))
+    incident_layer = torch.nn.DataParallel(incident_layer, device_ids = range(args.num_gpus))
+    place_layer = torch.nn.DataParallel(place_layer, device_ids = range(args.num_gpus))
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     trunk_model.to(device)
@@ -149,15 +149,15 @@ def update_incidents_model_with_checkpoint(incidents_model, args):
 
     config_name = os.path.basename(args.config)
     print(config_name)
-    
+
     best_str = "_best" if args.mode == "test" else ""
 
     trunk_resume = os.path.join(
-        args.checkpoint_path, "trunk{}.pth.tar".format(best_str))
+            args.checkpoint_path, "trunk{}.pth.tar".format(best_str))
     place_resume = os.path.join(
-        args.checkpoint_path, "place{}.pth.tar".format(best_str))
+            args.checkpoint_path, "place{}.pth.tar".format(best_str))
     incident_resume = os.path.join(
-        args.checkpoint_path, "incident{}.pth.tar".format(best_str))
+            args.checkpoint_path, "incident{}.pth.tar".format(best_str))
 
     # trunk_resume = "/data/vision/torralba/scratch/ethanweber/DamageAssessment/external/IncidentsDataset/pretrained_weights/eccv_final_model_trunk.pth.tar"
     # place_resume = "/data/vision/torralba/scratch/ethanweber/DamageAssessment/external/IncidentsDataset/pretrained_weights/eccv_final_model_place.pth.tar"
@@ -166,7 +166,7 @@ def update_incidents_model_with_checkpoint(incidents_model, args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     for (path, net) in [(trunk_resume, trunk_model), (place_resume, place_layer), (incident_resume, incident_layer)]:
         if os.path.isfile(path):
-            checkpoint = torch.load(path, map_location=device)
+            checkpoint = torch.load(path, map_location = device)
             args.start_epoch = checkpoint['epoch']
             net.load_state_dict(checkpoint['state_dict'])
             print("Loaded checkpoint '{}' (epoch {}).".format(path, checkpoint['epoch']))
@@ -187,7 +187,7 @@ def get_predictions_from_model(args,
                                image_paths,
                                index_to_incident_mapping,
                                index_to_place_mapping,
-                               inference_dict, topk=1):
+                               inference_dict, topk = 1):
     """
     Input:
     {
@@ -208,8 +208,8 @@ def get_predictions_from_model(args,
     place_output = place_layer(output)
 
     if args.activation == "softmax":
-        incident_output = F.softmax(incident_output, dim=1)
-        place_output = F.softmax(place_output, dim=1)
+        incident_output = F.softmax(incident_output, dim = 1)
+        place_output = F.softmax(place_output, dim = 1)
     elif args.activation == "sigmoid":
         m = nn.Sigmoid()
         incident_output = m(incident_output)
@@ -226,7 +226,7 @@ def get_predictions_from_model(args,
         for idx in incident_idx[batch_idx].cpu().numpy()[:topk]:
             if idx < len(index_to_incident_mapping):
                 incidents.append(
-                    index_to_incident_mapping[idx]
+                        index_to_incident_mapping[idx]
                 )
             else:
                 incidents.append("no incident")
@@ -235,28 +235,27 @@ def get_predictions_from_model(args,
         for idx in place_idx[batch_idx].cpu().numpy()[:topk]:
             if idx < len(index_to_place_mapping):
                 places.append(
-                    index_to_place_mapping[idx]
+                        index_to_place_mapping[idx]
                 )
             else:
                 places.append("no place")
 
         output = {
-            "incidents": incidents,
-            "places": places,
+            "incidents":      incidents,
+            "places":         places,
             "incident_probs": incident_probs[batch_idx].cpu().detach().numpy()[:topk],
-            "place_probs": place_probs[batch_idx].cpu().detach().numpy()[:topk]
+            "place_probs":    place_probs[batch_idx].cpu().detach().numpy()[:topk]
         }
         image_path = image_paths[batch_idx]
         temp_inference_dict[image_path] = output
 
-    # TODO: maybe return the output here
     if inference_dict is not None:
         inference_dict.update(temp_inference_dict)
     return temp_inference_dict
 
 
 def get_predictions_from_model_all(args, incidents_model, batch_input, image_paths, index_to_incident_mapping,
-                                   index_to_place_mapping, inference_dict, softmax=True):
+                                   index_to_place_mapping, inference_dict, softmax = True):
     """
     Input:
     {
@@ -277,8 +276,8 @@ def get_predictions_from_model_all(args, incidents_model, batch_input, image_pat
     place_output = place_layer(output)
 
     if softmax:
-        incident_output = F.softmax(incident_output, dim=1)
-        place_output = F.softmax(place_output, dim=1)
+        incident_output = F.softmax(incident_output, dim = 1)
+        place_output = F.softmax(place_output, dim = 1)
     else:
         m = nn.Sigmoid()
         incident_output = m(incident_output)
@@ -293,7 +292,7 @@ def get_predictions_from_model_all(args, incidents_model, batch_input, image_pat
         for idx in incident_idx[batch_idx].cpu().numpy():
             if idx < len(index_to_incident_mapping):
                 incidents.append(
-                    index_to_incident_mapping[idx]
+                        index_to_incident_mapping[idx]
                 )
             else:
                 incidents.append("no incident")
@@ -302,22 +301,21 @@ def get_predictions_from_model_all(args, incidents_model, batch_input, image_pat
         for idx in place_idx[batch_idx].cpu().numpy():
             if idx < len(index_to_place_mapping):
                 places.append(
-                    index_to_place_mapping[idx]
+                        index_to_place_mapping[idx]
                 )
             else:
                 places.append("no place")
 
         output = {
-            "incidents": incidents,
-            "places": places,
+            "incidents":      incidents,
+            "places":         places,
             "incident_probs": incident_probs[batch_idx].cpu().detach().numpy(),
-            "place_probs": place_probs[batch_idx].cpu().detach().numpy()
+            "place_probs":    place_probs[batch_idx].cpu().detach().numpy()
         }
         image_path = image_paths[batch_idx]
         inference_dict[image_path] = output
 
-    # TODO: maybe return the output here
-    return None
+    return inference_dict
 
 
 def get_features_from_model(incidents_model, batch_input, image_paths, inference_dict):
@@ -345,5 +343,4 @@ def get_features_from_model(incidents_model, batch_input, image_paths, inference
         image_path = image_paths[batch_idx]
         inference_dict[image_path] = out
 
-    # TODO: maybe return the output here
-    return None
+    return inference_dict

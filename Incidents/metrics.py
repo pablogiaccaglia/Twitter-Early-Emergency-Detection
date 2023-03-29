@@ -9,16 +9,11 @@ from utils import get_index_to_incident_mapping, get_index_to_place_mapping
 
 main_path = os.path.dirname(os.path.abspath(__file__))
 
-# TODO: make these passed in
 index_to_incident_mapping = get_index_to_incident_mapping()
 index_to_place_mapping = get_index_to_place_mapping()
 
 
-# TODO: move these out
-
-
 def get_place_name_from_mapping(idx):
-    name = None
     if idx in index_to_place_mapping:
         name = index_to_place_mapping[idx]
     else:
@@ -27,7 +22,6 @@ def get_place_name_from_mapping(idx):
 
 
 def get_incident_name_from_mapping(idx):
-    name = None
     if idx in index_to_incident_mapping:
         name = index_to_incident_mapping[idx]
     else:
@@ -49,7 +43,7 @@ class AverageMeter(object):
         self.sum = 0
         self.count = 0
 
-    def update(self, val, n=1):
+    def update(self, val, n = 1):
         self.val = val
         self.sum += val * n
         self.count += n
@@ -71,7 +65,7 @@ def batched_index_select(input_value, dim, index):
     return torch.gather(input_value, dim, index)
 
 
-def accuracy(output, target, topk=1):
+def accuracy(output, target, topk = 1):
     """Computes the topk accuracy and return the percentage.
     There must be some positive classes, otherwise an error is asserted.
 
@@ -98,7 +92,7 @@ def accuracy(output, target, topk=1):
     return correct_topk.mul_(100.0 / num_pos_in_batch)
 
 
-def get_acc_num_correct_out_of_total(output, target, topk=1):
+def get_acc_num_correct_out_of_total(output, target, topk = 1):
     """Computes the topk accuracy and return the percentage.
     There must be some positive classes, otherwise an error is asserted.
 
@@ -120,7 +114,7 @@ def get_acc_num_correct_out_of_total(output, target, topk=1):
     return correct_topk, num_pos_in_batch
 
 
-def validate(args, val_loader, all_models, epoch=None, writer=None):
+def validate(args, val_loader, all_models, epoch = None, writer = None):
     """Run validation of the model with metrics.
 
     Args:
@@ -133,7 +127,7 @@ def validate(args, val_loader, all_models, epoch=None, writer=None):
     """
     if epoch is None:
         raise NotImplementedError(
-            "Not implemented for epoch==None")
+                "Not implemented for epoch==None")
 
     for m in all_models:
         # switch to evaluation mode
@@ -164,11 +158,11 @@ def validate(args, val_loader, all_models, epoch=None, writer=None):
 
     for batch_iteration, val_data_input in enumerate(val_loader):
 
-        image_v = val_data_input[0].cuda(non_blocking=True)  # image variable (batch)
-        target_p_v = val_data_input[1].cuda(non_blocking=True)  # p for place
-        target_i_v = val_data_input[2].cuda(non_blocking=True)  # i for incident
-        weight_p_v = val_data_input[3].cuda(non_blocking=True)
-        weight_i_v = val_data_input[4].cuda(non_blocking=True)
+        image_v = val_data_input[0].cuda(non_blocking = True)  # image variable (batch)
+        target_p_v = val_data_input[1].cuda(non_blocking = True)  # p for place
+        target_i_v = val_data_input[2].cuda(non_blocking = True)  # i for incident
+        weight_p_v = val_data_input[3].cuda(non_blocking = True)
+        weight_i_v = val_data_input[4].cuda(non_blocking = True)
 
         # measure data loading time
         a_v_data_time.update(time.time() - end_time)
@@ -233,19 +227,19 @@ def validate(args, val_loader, all_models, epoch=None, writer=None):
                     ap_places[class_idx].append((confidence, 0))
 
         # incident accuracy
-        incident_prec1 = accuracy(incident_output.data, target_i_v, topk=1)
-        incident_prec5 = accuracy(incident_output.data, target_i_v, topk=5)
+        incident_prec1 = accuracy(incident_output.data, target_i_v, topk = 1)
+        incident_prec5 = accuracy(incident_output.data, target_i_v, topk = 5)
 
-        top1_num_correct, top1_num_total = get_acc_num_correct_out_of_total(incident_output.data, target_i_v, topk=1)
+        top1_num_correct, top1_num_total = get_acc_num_correct_out_of_total(incident_output.data, target_i_v, topk = 1)
         top1_num_correct_all += top1_num_correct
         top1_num_total_all += top1_num_total
-        top5_num_correct, top5_num_total = get_acc_num_correct_out_of_total(incident_output.data, target_i_v, topk=5)
+        top5_num_correct, top5_num_total = get_acc_num_correct_out_of_total(incident_output.data, target_i_v, topk = 5)
         top5_num_correct_all += top5_num_correct
         top5_num_total_all += top5_num_total
 
         # place accuracy
-        place_prec1 = accuracy(place_output.data, target_p_v, topk=1)
-        place_prec5 = accuracy(place_output.data, target_p_v, topk=5)
+        place_prec1 = accuracy(place_output.data, target_p_v, topk = 1)
+        place_prec5 = accuracy(place_output.data, target_p_v, topk = 5)
 
         a_v_losses.update(loss.data, image_v.size(0))
         a_v_place_top1.update(place_prec1, image_v.size(0))
@@ -266,19 +260,19 @@ def validate(args, val_loader, all_models, epoch=None, writer=None):
                   'Place Prec@1 {a_v_place_top1.val:.3f} ({a_v_place_top1.avg:.3f})\t'
                   'Place Prec@5 {a_v_place_top5.val:.3f} ({a_v_place_top5.avg:.3f})\t'
                   'Incident Prec@5 {a_v_incident_top5.val:.3f} ({a_v_incident_top5.avg:.3f})\t'.format(
-                epoch, batch_iteration,
-                len(val_loader),
-                a_v_batch_time=a_v_batch_time,
-                a_v_data_time=a_v_data_time,
-                a_v_losses=a_v_losses,
-                a_v_incident_top1=a_v_incident_top1,
-                a_v_place_top1=a_v_place_top1,
-                a_v_incident_top5=a_v_incident_top5,
-                a_v_place_top5=a_v_place_top5))
+                    epoch, batch_iteration,
+                    len(val_loader),
+                    a_v_batch_time = a_v_batch_time,
+                    a_v_data_time = a_v_data_time,
+                    a_v_losses = a_v_losses,
+                    a_v_incident_top1 = a_v_incident_top1,
+                    a_v_place_top1 = a_v_place_top1,
+                    a_v_incident_top5 = a_v_incident_top5,
+                    a_v_place_top5 = a_v_place_top5))
 
     print("\nCalculating APs\n")
     # threshold are [0.0, 0.1, ..., 1.0] (11 values)
-    thresholds = [round(i, 2) for i in list(np.linspace(0.0, 1.0, num=11))]
+    thresholds = [round(i, 2) for i in list(np.linspace(0.0, 1.0, num = 11))]
 
     # holds average precision for each class
     ap_incident_dict = {}
@@ -294,7 +288,7 @@ def validate(args, val_loader, all_models, epoch=None, writer=None):
             continue
 
         sorted_by_confidence = sorted(
-            class_points, key=lambda x: x[0], reverse=True)
+                class_points, key = lambda x: x[0], reverse = True)
 
         count = 0
         pos_targets = 0
@@ -331,7 +325,7 @@ def validate(args, val_loader, all_models, epoch=None, writer=None):
             continue
 
         sorted_by_confidence = sorted(
-            class_points, key=lambda x: x[0], reverse=True)
+                class_points, key = lambda x: x[0], reverse = True)
 
         count = 0
         pos_targets = 0
@@ -358,7 +352,6 @@ def validate(args, val_loader, all_models, epoch=None, writer=None):
         average_precision = sum(l) / len(l)
         ap_place_dict[get_place_name_from_mapping(i)] = average_precision
 
-    # TODO(ethan): move this code out for test set only
     if writer is None:  # for test mode
         import pickle
         import os

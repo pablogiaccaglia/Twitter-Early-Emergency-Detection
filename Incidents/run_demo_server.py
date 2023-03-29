@@ -25,7 +25,7 @@ CHECKPOINT_PATH_FOLDER = "pretrained_weights/"
 # Load model from checkpoint.
 parser = get_parser()
 args = parser.parse_args(
-    args="--config={} --checkpoint_path={} --mode=test --num_gpus=1".format(CONFIG_FILENAME, CHECKPOINT_PATH_FOLDER))
+        args="--config={} --checkpoint_path={} --mode=test --num_gpus=1".format(CONFIG_FILENAME, CHECKPOINT_PATH_FOLDER))
 args = get_postprocessed_args(args)
 
 incidents_model = get_incidents_model(args)

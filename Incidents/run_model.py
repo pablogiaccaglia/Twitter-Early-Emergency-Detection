@@ -22,7 +22,7 @@ from metrics import AverageMeter, accuracy, validate
 import architectures as architectures
 from loss import get_loss
 from parser import get_parser, get_postprocessed_args
-from dataset import get_dataset
+from dataset import get_dataloader
 from utils import save_checkpoint
 
 
@@ -200,23 +200,23 @@ def main():
     if args.mode == "test":
         print("\n\nRunning in test mode\n\n")
         print("loading test_loader")
-        test_loader = get_dataset(args, is_train = False, is_test = True)
+        test_loader = get_dataloader(args, is_train = False, is_test = True)
         metric = validate(args, test_loader, all_models, epoch = -1, writer = None)
         print("metric on test set: {}".format(metric))
         return
     elif args.mode == "val":
         print("\n\nRunning in val mode\n\n")
         print("loading val_loader")
-        val_loader = get_dataset(args, is_train = False)  # TODO: don't shuffle
+        val_loader = get_dataloader(args, is_train = False)  # TODO: don't shuffle
         metric = validate(args, val_loader, all_models, epoch = -1, writer = None)
         print("metric on val set: {}".format(metric))
         return
 
     # load train loader in this case
     print("loading train_loader")
-    train_loader = get_dataset(args, is_train = True)
+    train_loader = get_dataloader(args, is_train = True)
     print("loading val_loader")
-    val_loader = get_dataset(args, is_train = False)  # TODO: don't shuffle
+    val_loader = get_dataloader(args, is_train = False)  # TODO: don't shuffle
 
     for epoch in range(args.start_epoch, args.epochs):
 
