@@ -5,8 +5,12 @@ from pandas import DataFrame
 from snscrape.modules.twitter import Tweet
 import pandas as pd
 import json
-import multiprocessing as mp
+from p_tqdm import p_map
 from snscrape.modules.twitter import TwitterTweetScraper
+import re
+
+from Incidents.Dataset_building import get_image_binary_from_url
+from Incidents.uplink_service import UplinkService
 
 
 def txt_to_list(filename: str):
@@ -52,12 +56,7 @@ def get_tweet_by_id(tweet_id):
 def build_tweets_csv(tweets_ids, csv_filename):
     start_time = time.time()
 
-    cpu_count = mp.cpu_count()
-    pool = mp.Pool(cpu_count)
-    tweets = pool.map(get_tweet_by_id, tweets_ids)
-
-    pool.close()
-    pool.join()
+    tweets = p_map(get_tweet_by_id, tweets_ids)
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -148,4 +147,43 @@ def slice_kaggle_dataframe_by_date(dataframe: DataFrame, date_column_name: str, 
     mask = (dataframe[date_column_name] >= start_date) & (dataframe[date_column_name] <= end_date)
     return dataframe.loc[mask]
 
+
+def get_url_from_csv_cell(cell_content:str):
+    return re.findall('.\'([^\']*)\'.', cell_content)[-1]
+
+def build_media_dict_from_df(df:DataFrame, media_column_name:str, text_column_name:str):
+
+    df = df[df[media_column_name].notnull()]
+    d = {}
+
+    # could parallelize this through Pool Map
+    for index, row in df.iterrows():
+        url = get_url_from_csv_cell(cell_content = row[media_column_name])
+        d[row[text_column_name]] = url
+    return d
+
+def get_filename_from_twitter_media_url(url:str):
+    name = re.search('.media/([^\']*)\?.', val).group(1)
+
+    extension = re.search('.format=([^\']*)&.', val).group(1)
+
+    return name + "." + extension
+
+
+def save_image_to_storj_from_media_dict_elem(dkey: str,
+                                             dataset: dict,
+                                             url_field_name: str,
+                                             filename_field_name: str,
+                                             folder_name: str):
+    try:
+        uplink_service = UplinkService()
+        url = dataset[dkey][url_field_name]
+        data = get_image_binary_from_url(url = url)
+        filename = get_filename_from_twitter_media_url(url = url)
+        uplink_service.upload_binary_file(data = data, BUCKET_NAME = folder_name, filename = filename)
+        dataset[dkey][url_field_name] = filename
+    except Exception as e:
+        print(e)
+        sys.stdout.flush()
+        dataset[dkey][url_field_name] = None
 
