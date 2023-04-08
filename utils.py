@@ -1,6 +1,10 @@
+import sys
 import time
+import urllib
 from datetime import datetime
+from io import BytesIO
 
+import requests
 from pandas import DataFrame
 from snscrape.modules.twitter import Tweet
 import pandas as pd
@@ -9,9 +13,40 @@ from p_tqdm import p_map
 from snscrape.modules.twitter import TwitterTweetScraper
 import re
 
-from Incidents.Dataset_building import get_image_binary_from_url
 from Incidents.uplink_service import UplinkService
 
+
+def get_filename_format_from_url(url: str):
+    return url.split('.')[-1]
+
+def save_json_file(elem, path):
+    with open(path, "w") as fp:
+        json.dump(elem, fp)
+
+def get_loaded_json_file(path):
+    with open(path, "r") as fp:
+        return json.load(fp)
+def download_and_save_image_from_url(url: str, save_path: str):
+    urllib.request.urlretrieve(url, save_path)
+
+def get_image_binary_from_url(url:str):
+    response = requests.get(url, timeout = 10, verify = False)
+    image_data = BytesIO(response.content)
+    return image_data
+def upload_binary_file_to_onedrive(
+        data,
+        folder_id,
+        AT,
+        filename
+):
+    GRAPH_API_ENDPOINT = 'https://graph.microsoft.com/v1.0/'
+    auth = 'Bearer ' + AT
+    headers = {'Authorization': auth}
+    response = requests.put(
+            url = GRAPH_API_ENDPOINT + f"users/32bb8e68-0b17-4a83-acd7-06db6015d8a0/drive/items/{folder_id}:/{filename}:/content",
+            headers = headers,
+            data = data
+    )
 
 def txt_to_list(filename: str):
     with open(filename) as file:
@@ -44,7 +79,7 @@ def get_tweet_by_id(tweet_id):
                 tweet.quoteCount,
                 tweet.viewCount,
                 tweet.hashtags,
-                tweet.media,
+                parse_twitter_media_content(tweet),
                 tweet.coordinates,
                 tweet.place]
     except:
@@ -163,9 +198,9 @@ def build_media_dict_from_df(df:DataFrame, media_column_name:str, text_column_na
     return d
 
 def get_filename_from_twitter_media_url(url:str):
-    name = re.search('.media/([^\']*)\?.', val).group(1)
+    name = re.search('.media/([^\']*)\?.', url).group(1)
 
-    extension = re.search('.format=([^\']*)&.', val).group(1)
+    extension = re.search('.format=([^\']*)&.', url).group(1)
 
     return name + "." + extension
 

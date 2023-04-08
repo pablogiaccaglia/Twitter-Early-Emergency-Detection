@@ -23,7 +23,7 @@ import architectures as architectures
 from loss import get_loss
 from parser import get_parser, get_postprocessed_args
 from dataset import get_dataloader
-from utils import save_checkpoint
+from incidents_utils import save_checkpoint
 
 
 def train(args, train_loader, all_models, optimizer, epoch):

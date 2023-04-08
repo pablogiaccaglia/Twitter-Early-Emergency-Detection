@@ -8,7 +8,7 @@ import torchvision.transforms as transforms
 from collections import defaultdict
 import copy
 
-from utils import (
+from incidents_utils import (
     get_place_to_index_mapping,
     get_incident_to_index_mapping,
     get_loaded_json_file

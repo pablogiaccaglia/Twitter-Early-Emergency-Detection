@@ -5,7 +5,7 @@ import numpy as np
 from collections import defaultdict
 
 from loss import get_loss
-from utils import get_index_to_incident_mapping, get_index_to_place_mapping
+from incidents_utils import get_index_to_incident_mapping, get_index_to_place_mapping
 
 main_path = os.path.dirname(os.path.abspath(__file__))
 

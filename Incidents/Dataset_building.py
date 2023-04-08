@@ -1,37 +1,17 @@
 import itertools
-import socket
-import sys
 import time
-from io import BytesIO
-from typing import re
-
-import requests
 from tqdm import tqdm
 from urllib3.exceptions import InsecureRequestWarning
-
 import utils
-import urllib.request
 import os
 import urllib3
 urllib3.disable_warnings(InsecureRequestWarning)
 
 import multiprocessing as mp
-from uplink_service import UplinkService
+# from uplink_service import UplinkService
 
 global uplink_service
-uplink_service = UplinkService()
-
-def get_filename_format_from_url(url: str):
-    return url.split('.')[-1]
-
-
-def download_and_save_image_from_url(url: str, save_path: str):
-    urllib.request.urlretrieve(url, save_path)
-
-def get_image_binary_from_url(url:str):
-    response = requests.get(url, timeout = 10, verify = False)
-    image_data = BytesIO(response.content)
-    return image_data
+# uplink_service = UplinkService()
 
 
 def save_image_to_storj_from_dataset_elem(dkey: str,
@@ -40,11 +20,26 @@ def save_image_to_storj_from_dataset_elem(dkey: str,
                                           folder_name: str):
     try:
         url = dataset[dkey][field_val]
-        data = get_image_binary_from_url(url = url)
+        data = utils.get_image_binary_from_url(url = url)
         uplink_service.upload_binary_file(data = data, BUCKET_NAME = folder_name, filename = dkey)
 
     except Exception as e:
         pass
+
+
+
+def save_image_to_onedrive_from_dataset_elem(dkey: str,
+                                             dataset: dict,
+                                             field_val: str,
+                                             folder_id: str):
+    try:
+        url = dataset[dkey][field_val]
+        data = utils.get_image_binary_from_url(url = url)
+        utils.upload_binary_file_to_onedrive(data = data, folder_id = folder_id, filename = dkey)
+
+    except Exception as e:
+        pass
+
 
 def get_image_filename_from_url(url: str):
     return url.split('/')[-1]
@@ -111,14 +106,14 @@ if __name__ == '__main__':
     cpu_count = mp.cpu_count()
     print(cpu_count)
     # uplink_service = UplinkService()
-    storj_bucket_name = "incidents-images"
+    folder_id = ""
     params = zip(val_dict.keys(), itertools.repeat(val_dict), itertools.repeat('url'),
-                 itertools.repeat(storj_bucket_name))
+                 itertools.repeat(folder_id))
 
     # save_image_to_storj_from_dataset_elem(list(val_dict.keys())[0], val_dict, 'url', uplink_service, storj_bucket_name)
 
     with mp.Pool(cpu_count) as pool:
         try:
-            r = pool.starmap(save_image_to_storj_from_dataset_elem, tqdm(params, total = len(list(val_dict.keys()))))
+            r = pool.starmap(save_image_to_onedrive_from_dataset_elem, tqdm(params, total = len(list(val_dict.keys()))))
         except:
             pass

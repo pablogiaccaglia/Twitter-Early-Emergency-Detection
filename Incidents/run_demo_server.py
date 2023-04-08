@@ -13,7 +13,7 @@ from architectures import (
     get_predictions_from_model
 )
 from parser import get_parser, get_postprocessed_args
-from utils import get_index_to_incident_mapping, get_index_to_place_mapping
+from incidents_utils import get_index_to_incident_mapping, get_index_to_place_mapping
 
 app = Flask(__name__)
 app.jinja_env.filters['zip'] = zip
