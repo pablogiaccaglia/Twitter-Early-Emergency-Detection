@@ -3,7 +3,7 @@ import time
 import urllib
 from datetime import datetime
 from io import BytesIO
-
+from collections import defaultdict
 import requests
 from pandas import DataFrame
 from snscrape.modules.twitter import Tweet
@@ -176,6 +176,15 @@ def get_tweets_ids_from_crisismmd_dataset(
                 pass  # skip this line
     return CrisisMMD_dataset_ids
 
+
+def merge_dicts(dicts:list):
+    merged = dict()
+
+    for d in dicts:
+        for k, v in d.items():  # use d.iteritems() in python 2
+            merged[k] = v
+
+    return merged
 
 def slice_kaggle_dataframe_by_date(dataframe: DataFrame, date_column_name: str, start_date: datetime,
                                    end_date: datetime):
