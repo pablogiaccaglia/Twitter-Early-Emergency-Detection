@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     print("UNT dataset building completed")
 
-    Kaggle_dataset_filename = "Kaggle_dataset/TS_Harvey_Tweets.csv"
+    Kaggle_dataset_filename = "Kaggle_dataset/original/TS_Harvey_Tweets.csv"
     start_date = datetime.strptime('2017-08-10', '%Y-%m-%d')
     end_date = datetime.strptime('2017-08-31', '%Y-%m-%d')
     Kaggle_tweets_ids = utils.get_tweets_ids_from_kaggle_dataset(Kaggle_dataset_filename = Kaggle_dataset_filename,
