@@ -3,7 +3,6 @@ import time
 import urllib
 from datetime import datetime
 from io import BytesIO
-from collections import defaultdict
 import requests
 from pandas import DataFrame
 from snscrape.modules.twitter import Tweet
@@ -12,12 +11,12 @@ import json
 from p_tqdm import p_map
 from snscrape.modules.twitter import TwitterTweetScraper
 import re
+import ast
 
-from Incidents.uplink_service import UplinkService
-
+from uplink_service import UplinkService
 
 def get_filename_format_from_url(url: str):
-    return url.split('.')[-1]
+    return url.split('/')[-1]
 
 def save_json_file(elem, path):
     with open(path, "w") as fp:
@@ -47,6 +46,9 @@ def upload_binary_file_to_onedrive(
             headers = headers,
             data = data
     )
+
+    return response
+
 
 def txt_to_list(filename: str):
     with open(filename) as file:
@@ -173,7 +175,7 @@ def get_tweets_ids_from_crisismmd_dataset(
                     CrisisMMD_dataset_ids.append(tweet['id_str'])
 
             except json.decoder.JSONDecodeError:
-                pass  # skip this line
+                pass
     return CrisisMMD_dataset_ids
 
 
@@ -196,7 +198,6 @@ def get_url_from_csv_cell(cell_content:str):
     return re.findall('.\'([^\']*)\'.', cell_content)[-1]
 
 def build_media_dict_from_df(df:DataFrame, media_column_name:str, text_column_name:str):
-
     df = df[df[media_column_name].notnull()]
     d = {}
 
@@ -217,7 +218,6 @@ def get_filename_from_twitter_media_url(url:str):
 def save_image_to_storj_from_media_dict_elem(dkey: str,
                                              dataset: dict,
                                              url_field_name: str,
-                                             filename_field_name: str,
                                              folder_name: str):
     try:
         uplink_service = UplinkService()
@@ -231,3 +231,28 @@ def save_image_to_storj_from_media_dict_elem(dkey: str,
         sys.stdout.flush()
         dataset[dkey][url_field_name] = None
 
+
+def fix_media_field(entry):
+    def get_url_from_csv_cell(cell_content: str):
+        return re.findall('.\'([^\']*)name=orig\'.', cell_content)[-1] + "name=orig"
+
+    def get_url_from_csv_cell_2(cell_content: str):
+        return re.findall('.\'([^\']*).jpg\'.', cell_content)[-1] + ".jpg"
+
+    def get_url_from_csv_cell_3(cell_content: str):
+        return re.findall('.\'([^\']*).png\'.', cell_content)[-1] + ".png"
+
+    if not isinstance(entry, str):
+        return entry
+    try:
+        urls = ast.literal_eval(entry)
+    except:
+        try:
+            urls = [get_url_from_csv_cell(entry)]
+        except:
+            try:
+                urls = [get_url_from_csv_cell_2(entry)]
+            except:
+                urls = [get_url_from_csv_cell_3(entry)]
+
+    return urls

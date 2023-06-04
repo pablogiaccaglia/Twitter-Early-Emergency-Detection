@@ -1,0 +1,19 @@
+Index: .idea/csv-plugin.xml
+===================================================================
+diff --git a/.idea/csv-plugin.xml b/.idea/csv-plugin.xml
+--- a/.idea/csv-plugin.xml	
++++ b/.idea/csv-plugin.xml	
+@@ -24,13 +24,6 @@
+             </Attribute>
+           </value>
+         </entry>
+-        <entry key="/UNT_dataset_200k_400k.csv">
+-          <value>
+-            <Attribute>
+-              <option name="separator" value="," />
+-            </Attribute>
+-          </value>
+-        </entry>
+       </map>
+     </option>
+   </component>

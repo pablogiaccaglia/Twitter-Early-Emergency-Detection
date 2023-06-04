@@ -1,10 +1,195 @@
 import os
 import re
 
+from nltk import LancasterStemmer
+from nltk.corpus import stopwords
+from spacy.lang.en.stop_words import contractions
+import inflect
 import utils
 
 import tqdm
 from revChatGPT.V3 import Chatbot
+
+
+def replace_contractions(text):
+    """Replace contractions in string of text"""
+    return contractions.fix(text)
+
+
+def remove_URL(sample):
+    """Remove URLs from a sample string"""
+    s = re.sub(r'\b(?:\w+(?:[-.]\w+)*\.)+\w*(?:[-./]\w*)*(?:/|\b)', '', sample)
+    s = re.sub(
+        r'https?://\S+|www\.\S+|bit\.ly/\S+|t\.co/\S+|ow\.ly/\S+|tinyurl\.com/\S+|is\.gd/\S+|goo\.gl/\S+|ow\.ly/\S+|buff\.ly/\S+|adf\.ly/\S+|ift\.tt/\S+',
+        " ", s)
+
+    s = re.sub(r"http\S+", "", s)
+
+    return s
+
+
+def remove_HTML(text):
+    return re.sub('r<.*?>', ' ', text)
+
+
+def remove_mentions(text):
+    return re.sub(r'@\w+', ' ', text)
+
+
+def remove_multiple_spaces(text):
+    return re.sub('\s+', ' ', text)
+
+
+def remove_RT(words):
+    return words.replace("RT : ", "")
+
+
+def remove_amp(words):
+    w = words.replace("&amp;", "")
+    w = w.replace("&lt;", "")
+    w = w.replace("&gt;", "")
+    w = re.sub('r&.*?;', '', w)
+    return w.replace(" amp ", "")
+
+
+def remove_dash(words):
+    return words.replace(" - ", "")
+
+
+def remove_non_ascii(text, remove_emoji = True):
+    # Pattern to match emojis
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               "]+", flags = re.UNICODE)
+
+    # print([c for c in text])
+    if remove_emoji:
+        text = ''.join(c for c in text if c.isascii())
+    else:  # Remove non-ASCII characters except emojis
+        text = ''.join(c for c in text if c.isascii() or emoji_pattern.match(c))
+
+    return text
+
+
+def to_lowercase(words):
+    """Convert all characters to lowercase from list of tokenized words"""
+    new_words = []
+    for word in words:
+        new_word = word.lower()
+        new_words.append(new_word)
+    return new_words
+
+
+def remove_punctuation(words):
+    """Remove punctuation from list of tokenized words"""
+    new_words = []
+    for word in words:
+        new_word = re.sub(r'[^\w\s]', '', word)
+        if new_word != '':
+            new_words.append(new_word)
+    return new_words
+
+
+def replace_numbers(words):
+    """Replace all interger occurrences in list of tokenized words with textual representation"""
+    p = inflect.engine()
+    new_words = []
+    for word in words:
+        if word.isdigit():
+            new_word = p.number_to_words(word)
+            new_words.append(new_word)
+        else:
+            new_words.append(word)
+    return new_words
+
+
+def remove_stopwords(words):
+    """Remove stop words from list of tokenized words"""
+    new_words = []
+    for word in words:
+        if word not in stopwords.words('english'):
+            new_words.append(word)
+    return new_words
+
+
+def stem_words(words):
+    """Stem words in list of tokenized words"""
+    stemmer = LancasterStemmer()
+    stems = []
+    for word in words:
+        stem = stemmer.stem(word)
+        stems.append(stem)
+    return stems
+
+
+def lemmatize_verbs(words):
+    """Lemmatize verbs in list of tokenized words"""
+    lemmatizer = WordNetLemmatizer()
+    lemmas = []
+    for word in words:
+        lemma = lemmatizer.lemmatize(word, pos = 'v')
+        lemmas.append(lemma)
+    return lemmas
+
+
+def normalize(words):
+    words = to_lowercase(words)
+    words = remove_punctuation(words)
+    words = remove_stopwords(words)
+    return words
+
+
+def convert_space(text):
+    text = text.replace(u'\xa0', u' ')
+    return text
+
+
+def remove_harvey(text):
+    text = text.replace("harvey ", "")
+    text = text.replace("Harvey ", "")
+    return text
+
+
+def remove_newlines(text):
+    text = re.sub('\n', ' ', text)
+    return text
+
+
+def preprocess(sample):
+    sample = convert_space(sample)
+    sample = remove_multiple_spaces(sample)
+    sample = remove_newlines(sample)
+    sample = remove_non_ascii(sample)
+    sample = remove_URL(sample)
+    sample = remove_RT(sample)
+    sample = remove_HTML(sample)
+    sample = remove_mentions(sample)
+    sample = remove_dash(sample)
+    sample = remove_amp(sample)
+    sample = remove_harvey(sample)
+    sample = replace_contractions(sample)
+
+    return " ".join(normalize(sample.split(" ")))
+
+
+def preprocess_for_bert(sample):
+    sample = convert_space(sample)
+    sample = remove_multiple_spaces(sample)
+    sample = remove_newlines(sample)
+    sample = remove_URL(sample)
+    sample = remove_HTML(sample)
+    sample = remove_mentions(sample)
+    sample = remove_dash(sample)
+    sample = remove_amp(sample)
+    sample = remove_non_ascii(sample, remove_emoji = False)
+    # sample = remove_harvey(sample)
+    sample = replace_contractions(sample)
+    sample = remove_multiple_spaces(sample)
+    sample = remove_RT(sample)
+    return sample
 
 
 def filter_inference_dict(inference_dict: dict,
@@ -204,10 +389,10 @@ if __name__ == '__main__':
     chat_gpt_token = "NOT GONNA TELL YOU :)"
     save_folder = 'temp'
 
-    """generate_captions_routine(crisismmd_inference_dict_path = crisismmd_inference_dict_path,
+    generate_captions_routine(crisismmd_inference_dict_path = crisismmd_inference_dict_path,
                               filtered_dict_file_path = "crisismmd_filtered_inference_dict.json",
                               chat_gpt_token = chat_gpt_token,
-                              save_folder = save_folder)"""
+                              save_folder = save_folder)
 
     d = unify_captions_dicts(folder_name = save_folder)
     utils.save_json_file(d, 'crisismmd_generated_sentences_02_04.json')
