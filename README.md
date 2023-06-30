@@ -1,10 +1,28 @@
 # 🐦 Twitter-Early-Emergency-Detection
 
+- 📙 [Description](#-description)
+- 📦 [Repo content](#-repo-content)
+- ⚙️ [Pipeline](#-Pipeline)
+- 💾 [Explored Inputs](#-explored-inputs)
+- 🧠 [Models Explored](#-models-explored)
+- 📋 [Performance Results](#-performance-results)
+- 📜 [Generated picture captions](#-generated-picture-captions)
+
+
 # 📙 Description
 Early Detection and Rapid Response (**EDRR**) to natural disasters is a laborious task. It is important to have rapid detection for early response.
 Tweets can provide a low-latency source of first-hand information. There are numerous possibilities to make use of them for improval of situation, such as the detection of
 a catastrophe's outbreak, follow the situation without being on-site and locate hotspots, even without geo-data.
 
+# 📦 Repo content
+- [CRISISMMD_IMAGES](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/CRISISMMD_IMAGES)
+- [CrisisMMD_v2.0](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/CrisisMMD_v2.0)
+- [Incidents](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/Incidents)
+- [Kaggle_dataset](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/Kaggle_dataset)
+- [UNT_dataset](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/UNT_dataset)
+- [media](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/media)
+- [crisis-tweets-data](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/tweets-data)
+- [EDA+experiments.ipynb](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/blob/master/EDA%2Bexperiments.ipynb)
 # ⚙️ Pipeline
 ![alt text](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/blob/master/media/pipeline.svg)
 
