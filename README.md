@@ -15,14 +15,32 @@ Tweets can provide a low-latency source of first-hand information. There are num
 a catastrophe's outbreak, follow the situation without being on-site and locate hotspots, even without geo-data.
 
 # 📦 Repo content
-- [CRISISMMD_IMAGES](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/CRISISMMD_IMAGES)
+- [tweets_scrape.py](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/blob/master/tweets_scrape.py) -> script for scraping the tweets of the various dataset reported below
+- [CRISISMMD_IMAGES](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/CRISISMMD_IMAGES):
+  - [CrisisMMD](https://crisisnlp.qcri.org/crisismmd) **3357 images** scraped from the web through script contained [here](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/CrisisMMD_v2.0)
 - [CrisisMMD_v2.0](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/CrisisMMD_v2.0)
-- [Incidents](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/Incidents)
-- [Kaggle_dataset](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/Kaggle_dataset)
-- [UNT_dataset](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/UNT_dataset)
-- [media](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/media)
-- [crisis-tweets-data](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/tweets-data)
+  - The folder contains scripts and files relevant to the [CrisisMMD](https://crisisnlp.qcri.org/crisismmd) dataset. Here the most important ones:
+    - [crisismd_images_scrape.py](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/blob/master/CrisisMMD_v2.0/crisismd_images_scrape.py)
+    - [crisismmd_BILP2-generated-sentences.json](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/blob/master/CrisisMMD_v2.0/crisismmd_BILP2-generated-sentences.json) -> json dict containing generated captions ( **key: image file name , value: caption**)
+    - [crisismmd_sintetic_tweets.py](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/blob/master/CrisisMMD_v2.0/crisismmd_sintetic_tweets.py) -> script for generating synthetic tweets through **ChatGPT**
+    - [/CrisisMMD_final_dataset_captions_with_stweets.csv](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/blob/master/CrisisMMD_v2.0/CrisisMMD_final_dataset_captions_with_stweets.csv) -> final csv with **generated captions** and **synthetic tweets**, without labels (these are contained [here](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/blob/master/CrisisMMD_v2.0/json/hurricane_harvey_final_data.json))
 - [EDA+experiments.ipynb](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/blob/master/EDA%2Bexperiments.ipynb)
+  - This notebook comprises preliminary exploratory data analysis and all the experiments for achieving the results shown below.
+ [crisis-tweets-data](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/tweets-data)
+  - This folder contains the most relevant files related to** CrisisMMD dataset**, which are:
+    - [CrisisMMD_final_dataset_captions_with_stweets.csv] -> final csv with **generated captions** and **synthetic tweets**, without labels (these are contained [here](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/blob/master/tweets-data/hurricane_harvey_final_data.xlsx))
+    - [crisismd_tweets_media_urls.json]() -> json dict containing urls of the scraped images
+(**key: tweet text content, value: list of urls**)
+    - [crisismmd_BILP2-generated-sentences.json](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/blob/master/CrisisMMD_v2.0/crisismmd_BILP2-generated-sentences.json) -> json dict containing generated captions 
+( **key: image file name , value: caption**)
+    - [hurricane_harvey_final_data.xlsx](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/blob/master/tweets-data/hurricane_harvey_final_data.xlsx) -> contains the labels associated with the crisismmd tweets
+
+- Additional datasets used for experimenting different approaches (not contained in this repository). The folders contains both scraping & generation scripts and structured resulting data
+  
+  - [Kaggle_dataset](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/Kaggle_dataset) -> [source](https://www.kaggle.com/datasets/dan195/hurricaneharvey)
+  - [UNT_dataset](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/UNT_dataset) -> [source](https://digital.library.unt.edu/ark:/67531/metadc993940/#collections)
+
+- [additional-labelled-tweets](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/additional-labelled-tweets) -> additional manually labeled tweets by us coming from the UNT dataset
 # ⚙️ Pipeline
 ![alt text](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/blob/master/media/pipeline.svg)
 
@@ -40,16 +58,19 @@ To train the tweet classification model, we leverage various sources of informat
   - **CrisisMMD Dataset**: Strictly related to Hurricane Harvey
   - 3991 Tweets
   - Tweet is relevant if useful for **“Humanitarian aid”**
+  - Available [here](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/blob/master/tweets-data/hurricane_harvey_final_data.xlsx)
 - **AI-generated Picture Captions**: Automatically generated captions for disaster-related images using computer vision techniques
   - Captions of Tweets’ images
-  - Done with **BILP Vision-LLM**
+  - Done with [**BILP Vision-LLM**](https://github.com/salesforce/BLIP)
   - High-quality descriptions
-  - Expensive model: **80GB of RAM required**
+  - Expensive model: **80GB of RAM required for inference**
+  - Available [here](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/blob/master/CrisisMMD_v2.0/crisismmd_BILP2-generated-sentences.json)
 
 - **Manually-labelled Tweets**: Additional tweets labeled by us to expand the training dataset
   - Double-agreement labels
   - Not always easy to get the “humanitarian aid” definition
   - **Distribution shift** w.r.t CrisisMMD worsened model performance
+  - Available [here](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/tree/master/additional-labelled-tweets)
 
 - **Pseudo-labelled Tweets**: Tweets labeled based on predictions made by the model itself, augmenting the training data
   - Aimed to enlarge training set
@@ -57,11 +78,12 @@ To train the tweet classification model, we leverage various sources of informat
   - **A lot of false positives**
   - Worsened model performance
 
-- **AI-generated Tweets for Training**: Tweets generated using BILP Vision-LLM
+- **AI-generated Tweets for Training**: Tweets generated using ChatGPT
   - ChatGPT-based generation 
   - Data augmentation of training set
   - Didn’t solve the class imbalance
   - Worsened model performance
+  - Available [here](https://github.com/pablogiaccaglia/Twitter-Early-Emergency-Detection/blob/master/CrisisMMD_v2.0/json/hurricane_harvey_final_data.json)
 
 # 🧠 Models Explored
 To classify the disaster-related tweets, we explore the following models:
